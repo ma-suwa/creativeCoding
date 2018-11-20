@@ -46,17 +46,24 @@
         var particles = new Particle(50, "#FFF", 20, 20, 100, getRandom(0.8, .95))//(size,color,vx,vy,life, gravity)
         stage.addChild(particles);
       }
-
+      
+      //タッチしてうごかしたら
+      document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+      function onDocumentTouchMove(event) {
+        var particles = new Particle(50, "#FFF", 20, 20, 100, getRandom(0.8, .95))//(size,color,vx,vy,life, gravity)
+        stage.addChild(particles);
+      }
+      
       window.addEventListener("devicemotion", devicemotionHandler);
       function devicemotionHandler(event) {
-        var bound = 2;
+        var bound = 0.8;
         var x = event.acceleration.x;
         var y = event.acceleration.y;
         var z = event.acceleration.z;
         if (x > bound || y > bound || z > bound) {
-          var particles = new Particle(50, "#FFF", 40, 60, 120, getRandom(0.9, .95))//(size,color,vx,vy,life, gravity)
+          var particles = new Particle(50, "#FFF", 40, 60, 100, getRandom(0.9, .95))//(size,color,vx,vy,life, gravity)
           particles.x = stage.canvas.width * Math.random();
-          particles.y = stage.canvas.height * Math.random() + stage.canvas.height;
+          particles.y = (stage.canvas.height * Math.random())+stage.canvas.height;
         }
         stage.addChild(particles);
       }
