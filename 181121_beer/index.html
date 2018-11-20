@@ -61,7 +61,7 @@
         var y = event.acceleration.y;
         var z = event.acceleration.z;
         if (x > bound || y > bound || z > bound) {
-          var particles = new Particle(50, "#FFF", 40, 60, 100, getRandom(0.9, .95))//(size,color,vx,vy,life, gravity)
+          var particles = new Particle(50, "#FFF", 40, 60, 120, getRandom(0.9, .95))//(size,color,vx,vy,life, gravity)
           particles.x = stage.canvas.width * Math.random();
           particles.y = (stage.canvas.height * Math.random())+stage.canvas.height;
         }
