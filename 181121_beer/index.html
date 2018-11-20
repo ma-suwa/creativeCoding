@@ -1,0 +1,159 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"/>
+  <style media="screen">
+  *{
+    margin: 0;
+  }
+  body{
+    background-color: #dcb541;
+  }
+  canvas#myCanvas {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  </style>
+  <script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+  <script>
+
+    window.addEventListener('load', init);
+    window.addEventListener('load', handleResize);//ロード時リサイズをかける
+    var stage;
+    var angle = 0;
+    var particles;
+    var objectPool = []; // オブジェクトプール
+
+    function init() {
+      stage = new createjs.Stage('myCanvas');
+      if(createjs.Touch.isSupported() == true){
+        createjs.Touch.enable(stage)
+      }
+
+
+      window.addEventListener("resize", function(){
+        handleResize();
+      });
+
+      document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+      //マウスが動いたら
+      function onDocumentMouseMove(event) {
+        var particles = new Particle(50, "#FFF", 20, 20, 100, getRandom(0.8, .95))//(size,color,vx,vy,life, gravity)
+        stage.addChild(particles);
+      }
+
+      window.addEventListener("devicemotion", devicemotionHandler);
+      function devicemotionHandler(event) {
+        var bound = 2;
+        var x = event.acceleration.x;
+        var y = event.acceleration.y;
+        var z = event.acceleration.z;
+        if (x > bound || y > bound || z > bound) {
+          var particles = new Particle(50, "#FFF", 40, 60, 120, getRandom(0.9, .95))//(size,color,vx,vy,life, gravity)
+          particles.x = stage.canvas.width * Math.random();
+          particles.y = stage.canvas.height * Math.random() + stage.canvas.height;
+        }
+        stage.addChild(particles);
+      }
+
+
+      createjs.Ticker.addEventListener("tick", handleTick);
+      createjs.Ticker.timingMode = createjs.Ticker.RAF;
+      function handleTick(event) {
+        stage.update();
+      }
+
+    }
+
+    class Particle extends createjs.Container {
+      constructor(size,color,vx,vy,life,gravity) {
+        super();
+        this.particleList = [];
+        this.size = size;
+        this.color = color;
+        this.vx = vx;
+        this.vy = vy;
+        this.life = life;
+        this.gravity = gravity;
+
+        for (var i = 0; i < 6; i++) {
+          var particle = fromPool();
+          particle.graphics
+                  .beginFill(this.color)
+                  .drawCircle(0, 0, Math.random()*Math.random()*this.size);
+          particle.cache(-this.size, -this.size, this.size * 2, this.size * 2);
+          particle.x = stage.mouseX + 60 * (Math.random() - 0.5);
+          particle.y = stage.mouseY + 60 * (Math.random() - 0.5);
+          this.addChild(particle);
+          particle.vx = this.vx * (Math.random() - 0.5);
+          particle.vy = this.vy * (Math.random() - 0.5);
+          particle.life = this.life;
+          particle.alpha = 0.5;
+          this.particleList.push(particle);
+        }
+        this.on('tick', this.update, this);
+      }
+      update(){
+        for(var i = 0; i < this.particleList.length; i++){
+          var particle = this.particleList[i]
+          particle.vy -= 1;
+          particle.vx *= this.gravity;
+          particle.vy *= this.gravity;
+          particle.x += particle.vx;
+          particle.y +=  particle.vy;
+          particle.life -= 1;
+          particle.alpha = particle.life/100;
+          particle.scaleX = particle.scaleY =  particle.life/360;
+
+          if (particle.life <= 0) {
+            toPool(this.particleList[i]);
+            stage.removeChild(this.particleList[i]);
+            this.particleList.splice(i, 1);
+            i -= 1;
+          }
+
+          this.addChild(particle);
+        }
+      }
+
+    }
+
+    function handleResize() {
+      var w = window.innerWidth;
+      var h = window.innerHeight;
+      stage.canvas.width = w;
+      stage.canvas.height = h;
+      stage.update();
+    }
+
+    function toPool(particle) {
+      objectPool.unshift(particle);
+    }
+
+    function fromPool() {
+      if (objectPool.length === 0) {
+        return new createjs.Shape();
+      } else {
+        return objectPool.pop();
+      }
+    }
+
+    function getRandom(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+
+
+  </script>
+</head>
+<body>
+  <div class="canvas">
+      <canvas id="myCanvas" width="640" height="640"></canvas>
+  </div>
+</body>
+</html>
