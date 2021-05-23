@@ -1,0 +1,94 @@
+
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Three.js x Interaction</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js"></script>
+  <!-- Threejs modules -->
+  <script type="module" src="main.js"></script>
+  <!-- NotoSans -->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&display=swap" rel="stylesheet">
+  <!-- material icon -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+  <div id="bg"></div>
+  <div id="myCanvas"></div>
+
+  <div></div>
+
+
+
+  <div class="contents">
+    <div class="title">
+      <span class="blend">
+        <p>02.</p>
+        <h1>Three.js x Interaction</h1>
+      </span>
+    </div>
+    <div>
+      <a href="#" class="git">
+        GitHub
+      </a>
+    </div>
+    <div class="subTitle">
+      <h2>参考</h2>
+      <p><a href="https://qiita.com/watabo_shi/items/39d21d53ca16541fd498">three.js超入門 第8回 シェーダーをインタラクティブに動かす</a></p>
+    </div>
+    <div id="app">
+      <div class="subTitle" v-for="n in 20" :key="n">
+        <h2>Lorem Ipsum</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</a></p>
+      </div>
+    </div>
+  </div>
+
+
+  
+  <script id="fragmentShader" type="x-shader/x-fragment">
+    varying vec2 vUv;
+    uniform vec2 u_resolution;
+    uniform float u_time;
+    uniform vec2 u_mouse;
+    uniform float u_radius;
+    uniform float u_scrollY;
+    void main() {
+      vec2 uv = vec2( vUv.x * u_resolution.x/u_resolution.y, vUv.y );
+      vec2 center = vec2( u_mouse.x * u_resolution.x/u_resolution.y, u_mouse.y );// アスペクト補正したマウス座標
+      float mouseAct = (u_mouse.x * u_mouse.y)/2.0 + 1.0;
+      float lightness = u_radius + abs(sin(mouseAct*u_resolution.x/u_resolution.y*5.0))*0.25+0.1 / length(uv - center);
+      vec3 color;
+      float d = dot(uv,uv);
+      float a = atan(uv.y,uv.x);
+      float z = length((uv.x+uv.y) + abs(center));
+
+      for(int i =0; i < 3; i++){
+        color[i] = lightness;
+        color[i] += float(i)*0.2 + cos(z*u_scrollY*0.0005) * sin(z*u_scrollY*0.0005);
+        color[i] -= 1.0 + float(i)*0.1;
+      }
+      gl_FragColor = vec4( color, 1.0 );
+    }
+  </script>
+  
+  <script id="vertexShader" type="x-shader/x-vertex">  
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;// uv: ShaderMaterialで補完される vec2 型(xy)の変数。テクスチャ座標のこと。
+      gl_Position = vec4( position, 1.0 );
+    }
+  </script>
+  <!-- Vuejs -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+    });
+  </script>
+</body>
+</html>
