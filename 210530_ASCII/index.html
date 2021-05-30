@@ -1,0 +1,105 @@
+
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Three.js x Interaction</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js"></script>
+  
+  <!-- Threejs modules -->
+  <script type="module" src="main.js"></script>
+  <!-- NotoSans -->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&display=swap" rel="stylesheet">
+  <!-- material icon -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+  <div class="title">
+    <p>03.</p>
+    <h1>Three.js x Interaction</h1>
+  </div>
+  <div class="flex">
+    <div id="effect"></div>
+    <div id="myCanvas"></div>
+  </div>
+
+
+  <div class="contents">
+
+    <div >
+      <a href="#" class="git">
+        GitHub
+      </a>
+    </div>
+    <div class="reffer">
+      <h2>Reference | 参考</h2>
+      <ul>
+
+        <li>          
+          <a href="https://qiita.com/watabo_shi/items/39d21d53ca16541fd498">
+            <p class="reffer-explain">Threejsマウスやスクロールでのインタラクション参考</p>       
+            <p class="reffer-article">three.js超入門 第8回 シェーダーをインタラクティブに動かす<i class="material-icons">&#xe89e;</i></p>
+          </a>
+        </li>
+        <li>          
+          <a href="https://github.com/mrdoob/three.js/blob/master/examples/webgl_effects_ascii.html">
+            <p class="reffer-explain">ASCII EFECTS</p>           
+            <p class="reffer-article">three.js webgl_effects_ascii.html<i class="material-icons">&#xe89e;</i></p>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
+  <script id="fragmentShader" type="x-shader/x-fragment">
+    #define TWO_PI 6.2831853072
+    #define PI 3.14159265359
+
+    varying vec2 vUv;
+    uniform vec2 u_resolution;
+    uniform float u_time;
+    uniform vec2 u_mouse;
+    uniform float u_scrollY;
+
+    float map(float value, float min1, float max1, float min2, float max2) {
+      return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+    }
+
+    void main(void) {
+      vec2 uv = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / min(u_resolution.x, u_resolution.y);
+      
+      float lineWidth = 0.03;
+
+      float color = 0.0;
+      float mouseAct = (u_mouse.x * u_mouse.y)/2.0 + 1.0;
+
+      float scroll = map(u_scrollY, 0.0, 400.0, 0.0, 4.0);
+      vec2 uv_pos = vec2(uv.x-u_mouse.x*2.0+1.0, uv.y-u_mouse.y*2.0+1.0);
+      for(int i = 0; i < 5; i++){        
+        
+        float t = u_time*0.1;
+        color += lineWidth / abs(fract(t - 0.2*float(i))*scroll - length(uv_pos));
+      };
+
+      
+
+      gl_FragColor = vec4(vec3(smoothstep(0.3,0.8,color)),1.0);
+    }
+  </script>
+  
+  <script id="vertexShader" type="x-shader/x-vertex">  
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;// uv: ShaderMaterialで補完される vec2 型(xy)の変数。テクスチャ座標のこと。
+      gl_Position = vec4( position, 1.0 );
+    }
+  </script>
+
+
+</body>
+</html>
