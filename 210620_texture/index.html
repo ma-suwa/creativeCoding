@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Three.js x Interaction</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js"></script>
+  <!-- Threejs modules -->
+  <script type="module" src="main.js"></script>
+  <!-- NotoSans -->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&display=swap" rel="stylesheet">
+  <!-- material icon -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+  <div class="title">
+    <span class="blend">
+      <p>04.</p>
+      <h1>Three.js x Interaction</h1>
+    </span>
+  </div>
+
+  <div id="myCanvas"></div>
+
+  <div class="contents">
+    <div >
+      <a href="#" class="git">
+        GitHub
+      </a>
+    </div>
+    <div class="reffer">
+      <h2>Reference | 参考</h2>
+      <ul>
+        <li>          
+          <a href="https://qiita.com/watabo_shi/items/2fc671f2147e799787f9">
+            <p class="reffer-explain">Threejsテクスチャ参考</p>       
+            <p class="reffer-article">three.js超入門 第9回 シェーダーでテクスチャにエフェクトをかける<i class="material-icons">&#xe89e;</i></p>
+          </a>
+        </li>
+        <li>          
+          <a href="https://qiita.com/ykob/items/4ede3cb11684c8a403f8">
+            <p class="reffer-explain">テクスチャのリサイズ挙動</p>           
+            <p class="reffer-article">windowサイズいっぱいに広げたPlaneのテクスチャにbackground-size:coverのような挙動をさせる。<i class="material-icons">&#xe89e;</i></p>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
+  <script id="fragmentShader" type="x-shader/x-fragment">
+    varying vec2 vUv;
+    uniform vec2 u_resolution;
+    uniform float u_time;
+    uniform vec2 u_mouse;
+    uniform float u_radius;
+    uniform float u_scrollY;
+
+    uniform sampler2D uTex;
+
+    float random (in float x) {
+      return fract(sin(x)*1e4);
+    }
+    float random (vec2 st) {
+      return fract(sin(dot(st.xy,
+                            vec2(12.9898,78.233)))*
+          43758.5453123);
+    }
+
+    void main() {
+      vec2 imageResolution = vec2(1920.0, 1279.0);
+      vec2 ratio = vec2(
+        min((u_resolution.x / u_resolution.y) / (imageResolution.x / imageResolution.y), 1.0),
+        min((u_resolution.y / u_resolution.x) / (imageResolution.y / imageResolution.x), 1.0)
+      );
+
+      vec2 uv = vec2(
+          vUv.x * ratio.x + (1.0 - ratio.x) * 0.5,
+          vUv.y * ratio.y + (1.0 - ratio.y) * 0.5
+      );
+
+      vec2 fMosaicScal = vec2(8.0,8.0);
+      
+      vec2 n =vec2(
+          floor(uv.x * u_resolution.x / fMosaicScal.x) / (u_resolution.x / fMosaicScal.x),
+          floor(uv.y * u_resolution.y / fMosaicScal.y) / (u_resolution.y / fMosaicScal.y)
+      );  
+
+      float t = u_scrollY*0.0025;
+
+      uv.y = clamp(
+        uv.y,
+        0.0,
+        t/n.y+2.0
+      );
+
+      uv.y = clamp(
+        uv.y,
+        0.0,
+        log(pow(t,2.0))/random(n)+1.0
+      );
+
+      vec3 color = texture2D( uTex, uv ).rgb;
+    
+      gl_FragColor = vec4( color, 1.0 );
+    }
+  </script>
+  
+  <script id="vertexShader" type="x-shader/x-vertex">  
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;// uv: ShaderMaterialで補完される vec2 型(xy)の変数。テクスチャ座標のこと。
+      gl_Position = vec4( position, 1.0 );
+    }
+  </script>
+
+</body>
+</html>
